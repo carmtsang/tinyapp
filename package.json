@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/carmtsang/tinyapp/issues"
   },
-  "homepage": "https://github.com/carmtsang/tinyapp#readme"
+  "homepage": "https://github.com/carmtsang/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.18.0"
+  }
 }
