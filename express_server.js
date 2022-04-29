@@ -1,8 +1,16 @@
 const express = require('express');
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080; 
+
+// for post req. body-parser will convert the req body from a buffer into a string
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.set('view engine', 'ejs');
+
+const generateRandomString = () => {
+  return Math.random().toString(36).substring(2,8);
+}
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -26,6 +34,12 @@ app.get('/urls', (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
+
+// posting a new longURL
+app.post('/urls', (req, res) => {
+  console.log(req.body); // log the POST request body to the console
+  res.send('Ok'); //respond with 'ok'
+})
 
 app.get('/urls/new', (req, res) => {
   res.render('urls_new')
