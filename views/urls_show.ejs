@@ -13,13 +13,26 @@
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
     </div>
     <div class="card-body">
-      <form method="POST" action="/urls/<%=shortURL%>">
-        <h5 class="card-title"><label for="longURL">Edit:</label></h5> 
-        <input class="form-control" type="text" name="longURL" placeholder="http://" style="width: 300px; margin: auto;" required>
-        <button type="submit" class="btn btn-primary" style="margin-top: 10px" >Submit</button>
-      </form>
+      <h5 class="card-title">Edit</h5>
+      <div class="d-flex justify-content-center">
+        <form class="form-inline" action="/urls/<%=shortURL%>" method="POST">
+          <div class="form-group mb-2">
+            <label for="longURL">New URL:</label>    
+            <input class="form-control" type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em" required>
+            <button type="submit" class="btn btn-primary" >Submit</button>
+          </div>
+        </form>
+
+      </div>
     </div>
  
+    
+      
+
+        
+      
+
+
     <div class="card-footer text-muted"></div>
   </div>
   <!-- Bootstrap JS -->
