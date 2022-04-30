@@ -60,7 +60,14 @@ app.get('/u/:shortURL', (req, res) => {
   res.redirect(longURL);
 });
 
-// remove a url resource
+// edit a longURL
+app.post('/urls/:shortURL', (req, res) => {
+  const shortURL = req.params.shortURL;
+  urlDatabase[shortURL] = req.body.longURL;
+  res.redirect('/urls')
+});
+
+// delete a url resource
 app.post('/urls/:shortURL/delete', (req, res) => {
   const shortURL = req.params.shortURL;
   delete(urlDatabase[shortURL])
