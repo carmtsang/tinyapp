@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const PORT = 8080; 
+const PORT = 8080;
 
 // for post req. body-parser will convert the req body from a buffer into a string
 const bodyParser = require("body-parser");
@@ -10,7 +10,7 @@ app.set('view engine', 'ejs');
 
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2,8);
-}
+};
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -37,16 +37,16 @@ app.get('/urls', (req, res) => {
 
 // posting a new longURL
 app.post('/urls', (req, res) => {
-  shortURL = generateRandomString()
+  const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
-})
+});
 
 app.get('/urls/new', (req, res) => {
-  res.render('urls_new')
-})
+  res.render('urls_new');
+});
 
-//route to specific short urls
+// route to specific short urls
 app.get('/urls/:shortURL', (req, res) => {
   // shortURL is the key, and longURL is the value
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
@@ -55,11 +55,18 @@ app.get('/urls/:shortURL', (req, res) => {
 
 // handle shortURL request, redirect to long
 app.get('/u/:shortURL', (req, res) => {
-  shortURL = req.params.shortURL;
+  const shortURL = req.params.shortURL;
   const longURL = urlDatabase[shortURL];
   res.redirect(longURL);
+});
+
+// remove a url resource
+app.post('/urls/:shortURL/delete', (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete(urlDatabase[shortURL])
+  res.redirect('/urls')
 })
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`)
+  console.log(`Example app listening on port ${PORT}!`);
 });
