@@ -37,8 +37,11 @@ app.get('/urls', (req, res) => {
 
 // posting a new longURL
 app.post('/urls', (req, res) => {
-  console.log(req.body); // log the POST request body to the console
-  res.send('Ok'); //respond with 'ok'
+  console.log(req.body);
+  shortURL = generateRandomString()
+  urlDatabase[shortURL] = req.body.longURL;
+  const templateVars = { shortURL, longURL: req.body.longURL };
+  res.render("urls_show", templateVars);
 })
 
 app.get('/urls/new', (req, res) => {
