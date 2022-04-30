@@ -39,7 +39,6 @@ app.get('/urls', (req, res) => {
 app.post('/urls', (req, res) => {
   shortURL = generateRandomString()
   urlDatabase[shortURL] = req.body.longURL;
-  console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 })
 
@@ -53,6 +52,13 @@ app.get('/urls/:shortURL', (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
 });
+
+// handle shortURL request, redirect to long
+app.get('/u/:shortURL', (req, res) => {
+  shortURL = req.params.shortURL;
+  const longURL = urlDatabase[shortURL];
+  res.redirect(longURL);
+})
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`)
