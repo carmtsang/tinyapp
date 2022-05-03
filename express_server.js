@@ -29,6 +29,8 @@ app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
 
+
+
 app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
 });
@@ -94,6 +96,12 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 app.post('/logout', (req, res) => {
   res.clearCookie('username');
   res.redirect('/urls')
+})
+
+// to registration
+app.get('/register', (req, res) => {
+  const templateVars = { username: req.cookies['username'] }
+  res.render('register', templateVars);
 })
 
 app.listen(PORT, () => {
