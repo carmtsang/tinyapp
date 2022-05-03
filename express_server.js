@@ -122,7 +122,9 @@ app.post('/register', (req, res) => {
     password: req.body.password
   };
   console.log(users)
-  res.redirect('/urls');
+  res.cookie('user_id', users[userID].id);
+  const templateVars = { user_ID: req.cookies['user_id'] };
+  res.redirect('/urls', templateVars);
 });
 
 app.listen(PORT, () => {
