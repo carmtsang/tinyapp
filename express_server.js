@@ -9,7 +9,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
-// for creating short URLs
+// for creating short URLs / userID
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2,8);
 };
@@ -112,6 +112,17 @@ app.post('/logout', (req, res) => {
 app.get('/register', (req, res) => {
   const templateVars = { username: req.cookies['username'] };
   res.render('register', templateVars);
+});
+
+app.post('/register', (req, res) => {
+  const userID = generateRandomString();
+  users[userID] = {
+    id: userID,
+    email: req.body.email,
+    password: req.body.password
+  };
+  console.log(users)
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
