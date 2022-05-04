@@ -121,10 +121,10 @@ app.post('/register', (req, res) => {
     email: req.body.email,
     password: req.body.password
   };
-  console.log(users)
   res.cookie('user_id', users[userID].id);
-  const templateVars = { user_ID: req.cookies['user_id'] };
-  res.redirect('/urls', templateVars);
+  const templateVars = { users };
+  console.log(templateVars.users)
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {
