@@ -65,7 +65,9 @@ app.post('/login', (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400).send('Please input your email/password');
   } else if (!findUser(req.body.email)) {
-    res.status(400).send('User does not exist');
+    res.status(403).send('User does not exist');
+  } else if (findUser(req.body.email) && req.body.password !== users[findUser(req.body.email)].password) {
+    res.status(403).send('Incorrect password');
   } else {
     res.cookie('user_id', findUser(req.body.email));
     res.redirect('/urls');
