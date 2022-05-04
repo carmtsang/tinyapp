@@ -55,12 +55,21 @@ app.get('/hello', (req, res) => {
   res.send('<html><body>Hello <b>World</b></body></html>\n');
 });
 
+app.get('/login', (req, res) => {
+  const user = req.cookies.user_id;
+  const templateVars = { user: users[user] };
+  res.render("login", templateVars);
+})
+
 app.post('/login', (req, res) => {
-  const user = findUser(req.body.email);
-  // const user_id = req.body.username;
-  // res.cookie('username', username);
-  res.cookie('user_id', user);
-  res.redirect('/urls');
+  if (!req.body.email || !req.body.password) {
+    res.status(400).send('Please input your email/password');
+  } else if (!findUser(req.body.email)) {
+    res.status(400).send('User does not exist');
+  } else {
+    res.cookie('user_id', findUser(req.body.email));
+    res.redirect('/urls');
+  }
 });
 
 app.get('/urls', (req, res) => {
