@@ -83,14 +83,18 @@ app.get('/urls', (req, res) => {
 // posting a new longURL
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
+  const user = req.cookies.user_id;
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  
+  // only users can post
+  !user ? res.status(401).send('Login required') : res.redirect(`/urls/${shortURL}`);
 });
 
 app.get('/urls/new', (req, res) => {
   const user = req.cookies.user_id;
   const templateVars = { user: users[user] };
-  res.render('urls_new', templateVars);
+  // if there is no cookie for a user, redirect to /login
+  !user ? res.redirect('/login') : res.render('urls_new', templateVars);
 });
 
 // route to individual short url
