@@ -16,12 +16,10 @@
         <button class="btn btn-outline-dark my-2 my-sm-0" type="submit">log out</button>
       </form>
       <% } else { %>
-      <form class="form-inline my-2 my-lg-0 " action="/register" method="GET">
-        <button class="btn btn-outline-dark my-2 my-sm-0" type="submit">Register</button>
-      </form>
-      <form class="form-inline my-2 my-lg-0 " action="/login" method="GET">
-        <button class="btn btn-outline-dark my-2 my-sm-0" style="margin-left: 10px" type="submit">Login</button>
-      </form>
+        <div class="navbar-nav">
+          <a class="nav-item nav-link" href="/login">Login</a>
+          <a class="nav-item nav-link" href="/register">Register</a>
+        </div>
       <% } %>
   </nav>
 
