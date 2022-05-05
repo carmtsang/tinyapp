@@ -123,17 +123,16 @@ app.get('/urls/:shortURL', (req, res) => {
   
   if (!user) {
     res.status(401).send('Login to TinyApp required')
-  } else if (user != urlDatabase[shortURL].userID) {
+  } else if (user !== urlDatabase[shortURL].userID) {
     res.status(403).send('You do not own this shortURL')
   } else {
     const templateVars = {
       shortURL,
-      longURL: urlDatabase[req.params.shortURL].longURL,
+      longURL: urlDatabase[shortURL].longURL,
       user: users[user]
     };
     res.render("urls_show", templateVars);
   }
-  
 });
 
 // handle shortURL request, redirect to long
@@ -144,15 +143,26 @@ app.get('/u/:shortURL', (req, res) => {
 
 // edit a longURL
 app.post('/urls/:shortURL', (req, res) => {
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-  res.redirect('/urls');
+  const user = req.cookies.user_id;
+  const shortURL = req.params.shortURL;
+  if (user !== urlDatabase[shortURL].userID) {
+    res.status(403).send('You do not own this shortURL')
+  } else {
+    urlDatabase[shortURL].longURL = req.body.longURL;
+    res.redirect('/urls');
+  }
 });
 
 // delete a url resource
 app.post('/urls/:shortURL/delete', (req, res) => {
+  const user = req.cookies.user_id;
   const shortURL = req.params.shortURL;
-  delete(urlDatabase[shortURL]);
-  res.redirect('/urls');
+  if (user !== urlDatabase[shortURL].userID) {
+    res.status(403).send('You do not own this shortURL')
+  } else {
+    delete(urlDatabase[shortURL]);
+    res.redirect('/urls');
+  }
 });
 
 app.post('/logout', (req, res) => {
