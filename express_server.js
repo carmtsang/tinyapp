@@ -107,15 +107,13 @@ app.get('/urls/:shortURL', (req, res) => {
 
 // handle shortURL request, redirect to long
 app.get('/u/:shortURL', (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL];
+  const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
 // edit a longURL
 app.post('/urls/:shortURL', (req, res) => {
-  const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL] = req.body.longURL;
   res.redirect('/urls');
 });
 
