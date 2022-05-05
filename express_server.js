@@ -39,13 +39,23 @@ const users = {
 };
 
 // find user_id by email
-const findUser = (email) => {
+const findUser = email => {
   for (let user in users) {
     if (email === users[user].email) {
       return user;
     }
   }
 };
+
+const urlsForUser = id => {
+  let userURLS = {};
+  for (let url in urlDatabase) {
+    if (id === urlDatabase[url].userID) {
+      userURLS[url] = urlDatabase[url]
+    }
+  }
+  return userURLS
+}
 
 // routes
 app.get('/', (req, res) => {
@@ -79,22 +89,24 @@ app.post('/login', (req, res) => {
 
 app.get('/urls', (req, res) => {
   const user = req.cookies.user_id;
+  
   const templateVars = {
-    urls: urlDatabase,
+    urls: urlsForUser(user),
     user: users[user]
   };
-  console.log(templateVars)
-  res.render("urls_index", templateVars);
+  !user ? res.status(401).send('Login or register to TinyApp to see URLs') : res.render("urls_index", templateVars);
 });
 
 // posting a new longURL
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   const user = req.cookies.user_id;
-  urlDatabase[shortURL] = req.body.longURL;
-  
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: user
+  }
   // only users can post
-  !user ? res.status(401).send('Login required') : res.redirect(`/urls/${shortURL}`);
+  !user ? res.status(401).send('Login to TinyApp required') : res.redirect(`/urls/${shortURL}`);
 });
 
 app.get('/urls/new', (req, res) => {
@@ -107,13 +119,21 @@ app.get('/urls/new', (req, res) => {
 // route to individual short url
 app.get('/urls/:shortURL', (req, res) => {
   const user = req.cookies.user_id;
-  // shortURL is the key, and longURL is the value
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL].longURL,
-    user: users[user]
-  };
-  res.render("urls_show", templateVars);
+  const shortURL = req.params.shortURL
+  
+  if (!user) {
+    res.status(401).send('Login to TinyApp required')
+  } else if (user != urlDatabase[shortURL].userID) {
+    res.status(403).send('You do not own this shortURL')
+  } else {
+    const templateVars = {
+      shortURL,
+      longURL: urlDatabase[req.params.shortURL].longURL,
+      user: users[user]
+    };
+    res.render("urls_show", templateVars);
+  }
+  
 });
 
 // handle shortURL request, redirect to long
