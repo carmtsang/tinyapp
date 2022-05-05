@@ -9,7 +9,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
-// for creating short URLs / userID
+// for creating short URLs / user_id
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2,8);
 };
@@ -41,7 +41,6 @@ const findUser = (email) => {
   }
 };
 
-
 // routes
 app.get('/', (req, res) => {
   res.send('Hello!');
@@ -59,12 +58,10 @@ app.get('/login', (req, res) => {
   const user = req.cookies.user_id;
   const templateVars = { user: users[user] };
   res.render("login", templateVars);
-})
+});
 
 app.post('/login', (req, res) => {
-  if (!req.body.email || !req.body.password) {
-    res.status(400).send('Please input your email/password');
-  } else if (!findUser(req.body.email)) {
+  if (!findUser(req.body.email)) {
     res.status(403).send('User does not exist');
   } else if (findUser(req.body.email) && req.body.password !== users[findUser(req.body.email)].password) {
     res.status(403).send('Incorrect password');
@@ -96,7 +93,7 @@ app.get('/urls/new', (req, res) => {
   res.render('urls_new', templateVars);
 });
 
-// route to specific short urls
+// route to individual short url
 app.get('/urls/:shortURL', (req, res) => {
   const user = req.cookies.user_id;
   // shortURL is the key, and longURL is the value
