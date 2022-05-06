@@ -47,6 +47,7 @@ const findUser = email => {
   }
 };
 
+// return array of urls for a particular user
 const urlsForUser = id => {
   let userURLS = {};
   for (let url in urlDatabase) {
@@ -55,6 +56,15 @@ const urlsForUser = id => {
     }
   }
   return userURLS
+}
+
+// find a long url using short url
+const findLongURL = shortURL => {
+  for (let url in urlDatabase) {
+    if (shortURL === url) {
+      return urlDatabase[url].longURL
+    }
+  }
 }
 
 // routes
@@ -138,10 +148,12 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 });
 
-// handle shortURL request, redirect to long
+// handle shortURL request, link to long url
 app.get('/u/:shortURL', (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  res.redirect(longURL);
+  const shortURL = req.params.shortURL;
+  const longURL = findLongURL(shortURL);
+  
+  longURL ? res.redirect(longURL) : res.status(404).send('Invalid URL')
 });
 
 // edit a longURL
