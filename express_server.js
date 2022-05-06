@@ -47,9 +47,9 @@ const generateRandomString = () => {
 };
 
 // find user_id by email
-const findUser = email => {
-  for (let user in users) {
-    if (email === users[user].email) {
+const getUserByEmail = (email, database) => {
+  for (let user in database) {
+    if (email === database[user].email) {
       return user;
     }
   }
@@ -96,7 +96,7 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const password = req.body.password;
-  const user = findUser(req.body.email);
+  const user = getUserByEmail(req.body.email, urlDatabase);
 
   if (!user) {
     res.status(403).send('User does not exist');
@@ -205,7 +205,7 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400).send('Please input your email/password');
-  } else if (findUser(req.body.email)) {
+  } else if (getUserByEmail(req.body.email, urlDatabase)) {
     res.status(400).send('User already exists');
   } else {
     const password = req.body.password;
