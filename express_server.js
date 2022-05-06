@@ -3,7 +3,7 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
-
+const bcrypt = require('bcryptjs')
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
@@ -77,9 +77,12 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  if (!findUser(req.body.email)) {
+  const password = req.body.password;
+  const user = findUser(req.body.email);
+  console.log('user password', users[user].password)
+  if (!user) {
     res.status(403).send('User does not exist');
-  } else if (findUser(req.body.email) && req.body.password !== users[findUser(req.body.email)].password) {
+  } else if (user && !bcrypt.compareSync(password, users[user].password)) {
     res.status(403).send('Incorrect password');
   } else {
     res.cookie('user_id', findUser(req.body.email));
@@ -183,12 +186,16 @@ app.post('/register', (req, res) => {
   } else if (findUser(req.body.email)) {
     res.status(400).send('User already exists');
   } else {
+    const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10);
     const userID = generateRandomString();
     users[userID] = {
       id: userID,
       email: req.body.email,
-      password: req.body.password
+      password: hashedPassword
     };
+    console.log('user id in register path:', users[userID].id)
+    console.log('new user password:', users[userID].password)
     res.cookie('user_id', users[userID].id);
     res.redirect('/urls');
   }
