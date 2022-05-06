@@ -5,6 +5,9 @@ const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcryptjs')
 
+const { generateRandomString, getUserByEmail, urlsForUser, findLongURL } = require('./helpers');
+const { urlDatabase, users } = require('./constants');
+
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -15,65 +18,6 @@ app.use(cookieSession({
   //cookie options
   maxAge: 24 * 60* 60 * 1000 //24 hours
 }));
-
-
-const urlDatabase = {
-  'b2xVn2': {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: 'userRandomID'
-  },
-  '9sm5xK': {
-    longURL: "http://www.google.com",
-    userID: 'userRandomID'
-  }
-};
-
-const users = {
-  'userRandomID': {
-    id: 'userRandomID',
-    email: 'user@example.com',
-    password: 'purple-monkey-dinosaur'
-  },
-  'user2RandomID': {
-    id: 'user2RandomID',
-    email: 'user2@example.com',
-    password: 'dishwasher-funk'
-  }
-};
-
-// for creating short URLs / user_id
-const generateRandomString = () => {
-  return Math.random().toString(36).substring(2,8);
-};
-
-// find user_id by email
-const getUserByEmail = (email, database) => {
-  for (let user in database) {
-    if (email === database[user].email) {
-      return user;
-    }
-  }
-};
-
-// return array of urls for a particular user
-const urlsForUser = id => {
-  let userURLS = {};
-  for (let url in urlDatabase) {
-    if (id === urlDatabase[url].userID) {
-      userURLS[url] = urlDatabase[url]
-    }
-  }
-  return userURLS
-}
-
-// find a long url using short url
-const findLongURL = shortURL => {
-  for (let url in urlDatabase) {
-    if (shortURL === url) {
-      return urlDatabase[url].longURL
-    }
-  }
-}
 
 // routes
 app.get('/', (req, res) => {
@@ -196,6 +140,7 @@ app.post('/logout', (req, res) => {
 
 // to registration
 app.get('/register', (req, res) => {
+  
   const user = req.session.user_id;
   const templateVars = { user: users[user] };
   res.render('register', templateVars);
