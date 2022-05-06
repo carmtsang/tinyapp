@@ -9,10 +9,6 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set('view engine', 'ejs');
 
-// for creating short URLs / user_id
-const generateRandomString = () => {
-  return Math.random().toString(36).substring(2,8);
-};
 
 const urlDatabase = {
   "b2xVn2": {
@@ -36,6 +32,11 @@ const users = {
     email: 'user2@example.com',
     password: 'dishwasher-funk'
   }
+};
+
+// for creating short URLs / user_id
+const generateRandomString = () => {
+  return Math.random().toString(36).substring(2,8);
 };
 
 // find user_id by email
@@ -89,7 +90,7 @@ app.get('/login', (req, res) => {
 app.post('/login', (req, res) => {
   const password = req.body.password;
   const user = findUser(req.body.email);
-  console.log('user password', users[user].password)
+
   if (!user) {
     res.status(403).send('User does not exist');
   } else if (user && !bcrypt.compareSync(password, users[user].password)) {
@@ -118,14 +119,15 @@ app.post('/urls', (req, res) => {
     longURL: req.body.longURL,
     userID: user
   }
-  // only users can post
+
   !user ? res.status(401).send('Login to TinyApp required') : res.redirect(`/urls/${shortURL}`);
 });
 
+// page to create a new short url. if a user is not logged in, redirect to login
 app.get('/urls/new', (req, res) => {
   const user = req.cookies.user_id;
   const templateVars = { user: users[user] };
-  // if there is no cookie for a user, redirect to /login
+
   !user ? res.redirect('/login') : res.render('urls_new', templateVars);
 });
 
@@ -148,7 +150,7 @@ app.get('/urls/:shortURL', (req, res) => {
   }
 });
 
-// handle shortURL request, link to long url
+// handle shortURL request, link to long url if it exists
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = findLongURL(shortURL);
@@ -156,7 +158,7 @@ app.get('/u/:shortURL', (req, res) => {
   longURL ? res.redirect(longURL) : res.status(404).send('Invalid URL')
 });
 
-// edit a longURL
+// edit a longURL - only users can edit their own urls
 app.post('/urls/:shortURL', (req, res) => {
   const user = req.cookies.user_id;
   const shortURL = req.params.shortURL;
@@ -192,6 +194,7 @@ app.get('/register', (req, res) => {
   res.render('register', templateVars);
 });
 
+// new registration
 app.post('/register', (req, res) => {
   if (!req.body.email || !req.body.password) {
     res.status(400).send('Please input your email/password');
@@ -206,8 +209,6 @@ app.post('/register', (req, res) => {
       email: req.body.email,
       password: hashedPassword
     };
-    console.log('user id in register path:', users[userID].id)
-    console.log('new user password:', users[userID].password)
     res.cookie('user_id', users[userID].id);
     res.redirect('/urls');
   }
