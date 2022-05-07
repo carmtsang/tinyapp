@@ -14,29 +14,29 @@ const getUserByEmail = (email, database) => {
   }
 };
 
-// return array of urls for a particular user
-const urlsForUser = id => {
+// return object of urls for a particular user
+const urlsForUser = (id, database) => {
   let userURLS = {};
-  for (let url in urlDatabase) {
-    if (id === urlDatabase[url].userID) {
-      userURLS[url] = urlDatabase[url]
+  for (let url in database) {
+    if (id === database[url].userID) {
+      userURLS[url] = database[url]
     }
   }
   return userURLS
-}
+};
 
 // find a long url using short url
-const findLongURL = shortURL => {
-  for (let url in urlDatabase) {
+const findLongURL = (shortURL, database) => {
+  for (let url in database) {
     if (shortURL === url) {
-      return urlDatabase[url].longURL
+      return database[url].longURL
     }
   }
-}
+};
 
 module.exports = {
   generateRandomString,
   getUserByEmail,
   urlsForUser,
   findLongURL
-}
+};
