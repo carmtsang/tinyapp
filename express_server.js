@@ -40,12 +40,13 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const password = req.body.password;
-  const user = getUserByEmail(req.body.email, urlDatabase);
+  const email = req.body.email
+  const user = getUserByEmail(req.body.email, users);
 
   if (!user) {
-    res.status(403).send('User does not exist');
+    return res.status(403).send('User does not exist');
   } else if (user && !bcrypt.compareSync(password, users[user].password)) {
-    res.status(403).send('Incorrect password');
+    return res.status(403).send('Incorrect password');
   } else {
     req.session.user_id = user;
     res.redirect('/urls');
@@ -70,7 +71,6 @@ app.post('/urls', (req, res) => {
     longURL: req.body.longURL,
     userID: user
   }
-
   !user ? res.status(401).send('Login to TinyApp required') : res.redirect(`/urls/${shortURL}`);
 });
 
@@ -140,7 +140,6 @@ app.post('/logout', (req, res) => {
 
 // to registration
 app.get('/register', (req, res) => {
-  
   const user = req.session.user_id;
   const templateVars = { user: users[user] };
   res.render('register', templateVars);
@@ -148,17 +147,19 @@ app.get('/register', (req, res) => {
 
 // new registration
 app.post('/register', (req, res) => {
-  if (!req.body.email || !req.body.password) {
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = getUserByEmail(email, users);
+  if (!email || !password) {
     res.status(400).send('Please input your email/password');
-  } else if (getUserByEmail(req.body.email, urlDatabase)) {
+  } else if (user) {
     res.status(400).send('User already exists');
   } else {
-    const password = req.body.password;
     const hashedPassword = bcrypt.hashSync(password, 10);
     const userID = generateRandomString();
     users[userID] = {
       id: userID,
-      email: req.body.email,
+      email: email,
       password: hashedPassword
     };
     req.session.user_id = users[userID].id
