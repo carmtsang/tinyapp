@@ -13,15 +13,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1', 'key2'],
-
+  keys: ['randomKey1', 'randomKey2'],
   //cookie options
   maxAge: 24 * 60* 60 * 1000 //24 hours
 }));
 
 // routes
 app.get('/', (req, res) => {
-  res.send('Hello!');
+  res.redirect('/urls');
 });
 
 app.get('/urls.json', (req, res) => {
@@ -43,10 +42,8 @@ app.post('/login', (req, res) => {
   const email = req.body.email
   const user = getUserByEmail(req.body.email, users);
 
-  if (!user) {
-    return res.status(403).send('User does not exist');
-  } else if (user && !bcrypt.compareSync(password, users[user].password)) {
-    return res.status(403).send('Incorrect password');
+  if (!user || !bcrypt.compareSync(password, users[user].password)) {
+    return res.status(403).send('Incorrect username or password');
   } else {
     req.session.user_id = user;
     res.redirect('/urls');
@@ -55,18 +52,24 @@ app.post('/login', (req, res) => {
 
 app.get('/urls', (req, res) => {
   const user = req.session.user_id;
-  
+
+  if (!user) {
+    res.status(401);
+    res.redirect('/login')
+  }
+
   const templateVars = {
-    urls: urlsForUser(user),
+    urls: urlsForUser(user, urlDatabase),
     user: users[user]
   };
-  !user ? res.status(401).send('Login or register to TinyApp to see URLs') : res.render("urls_index", templateVars);
+  res.render("urls_index", templateVars);
 });
 
 // posting a new longURL
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   const user = req.session.user_id;
+  
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: user
@@ -104,7 +107,7 @@ app.get('/urls/:shortURL', (req, res) => {
 // handle shortURL request, link to long url if it exists
 app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = findLongURL(shortURL);
+  const longURL = findLongURL(shortURL, urlDatabase);
   
   longURL ? res.redirect(longURL) : res.status(404).send('Invalid URL')
 });
