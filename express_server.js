@@ -14,13 +14,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ['randomKey1', 'randomKey2'],
-  //cookie options
-  maxAge: 24 * 60* 60 * 1000 //24 hours
 }));
 
 // routes
 app.get('/', (req, res) => {
-  res.redirect('/urls');
+  res.redirect('/');
 });
 
 app.get('/urls.json', (req, res) => {
@@ -39,51 +37,50 @@ app.get('/login', (req, res) => {
 
 app.post('/login', (req, res) => {
   const password = req.body.password;
-  const email = req.body.email
-  const user = getUserByEmail(req.body.email, users);
+  const email = req.body.email;
+  const user = getUserByEmail(email, users);
 
-  if (!user || !bcrypt.compareSync(password, users[user].password)) {
-    return res.status(403).send('Incorrect username or password');
+  if (!user) {
+    res.status(403).send('User does not exist');
+  } else if (user && !bcrypt.compareSync(password, users[user].password)) {
+    res.status(403).send('Incorrect password');
   } else {
     req.session.user_id = user;
     res.redirect('/urls');
   }
+  console.log(user)
 });
 
 app.get('/urls', (req, res) => {
   const user = req.session.user_id;
-
-  if (!user) {
-    res.status(401);
-    res.redirect('/login')
-  }
-
+  
   const templateVars = {
     urls: urlsForUser(user, urlDatabase),
     user: users[user]
   };
-  res.render("urls_index", templateVars);
+  console.log(templateVars)
+  !user ? res.redirect(401, 'login') : res.render("urls_index", templateVars);
 });
+
 
 // posting a new longURL
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
   const user = req.session.user_id;
-  
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: user
   }
-  !user ? res.status(401).send('Login to TinyApp required') : res.redirect(`/urls/${shortURL}`);
+  !user ? res.redirect(401, 'login') : res.redirect(`/urls/${shortURL}`);
 });
 
 // page to create a new short url. if a user is not logged in, redirect to login
 app.get('/urls/new', (req, res) => {
   const user = req.session.user_id;
   const templateVars = { user: users[user] };
-
   !user ? res.redirect('/login') : res.render('urls_new', templateVars);
 });
+
 
 // route to individual short url
 app.get('/urls/:shortURL', (req, res) => {
@@ -91,9 +88,9 @@ app.get('/urls/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL
   
   if (!user) {
-    res.status(401).send('Login to TinyApp required')
+    res.redirect(401, 'login') 
   } else if (user !== urlDatabase[shortURL].userID) {
-    res.status(403).send('You do not own this shortURL')
+    res.status(403).send('You do not own this Tiny URL')
   } else {
     const templateVars = {
       shortURL,
@@ -117,7 +114,7 @@ app.post('/urls/:shortURL', (req, res) => {
   const user = req.session.user_id;
   const shortURL = req.params.shortURL;
   if (user !== urlDatabase[shortURL].userID) {
-    res.status(403).send('You do not own this shortURL')
+    res.redirect(403, 'login') 
   } else {
     urlDatabase[shortURL].longURL = req.body.longURL;
     res.redirect('/urls');
@@ -129,7 +126,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   const user = req.session.user_id;
   const shortURL = req.params.shortURL;
   if (user !== urlDatabase[shortURL].userID) {
-    res.status(403).send('You do not own this shortURL')
+    res.status(403).send('You do not own this Tiny URL')
   } else {
     delete(urlDatabase[shortURL]);
     res.redirect('/urls');
@@ -154,9 +151,9 @@ app.post('/register', (req, res) => {
   const password = req.body.password;
   const user = getUserByEmail(email, users);
   if (!email || !password) {
-    res.status(400).send('Please input your email/password');
+    res.redirect(400, 'register');
   } else if (user) {
-    res.status(400).send('User already exists');
+    res.redirect(400, 'login') ;
   } else {
     const hashedPassword = bcrypt.hashSync(password, 10);
     const userID = generateRandomString();
