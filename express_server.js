@@ -51,13 +51,18 @@ app.post('/login', (req, res) => {
 
 app.get('/urls', (req, res) => {
   const user = req.session.userId;
+
+  if (!user) {
+    res.status(401),
+    res.redirect('/login')
+  }
   
   const templateVars = {
     urls: urlsForUser(user, urlDatabase),
     user: users[user]
   };
 
-  !user ? res.redirect(401, 'login') : res.render("urls_index", templateVars);
+  res.render("urls_index", templateVars);
 });
 
 
