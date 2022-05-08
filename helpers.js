@@ -1,5 +1,3 @@
-const { urlDatabase, users } = require('./constants');
-
 // for creating short URLs / user_id
 const generateRandomString = () => {
   return Math.random().toString(36).substring(2,8);
@@ -19,17 +17,17 @@ const urlsForUser = (id, database) => {
   let userURLS = {};
   for (let url in database) {
     if (id === database[url].userID) {
-      userURLS[url] = database[url]
+      userURLS[url] = database[url];
     }
   }
-  return userURLS
+  return userURLS;
 };
 
 // find a long url using short url
 const findLongURL = (shortURL, database) => {
   for (let url in database) {
     if (shortURL === url) {
-      return database[url].longURL
+      return database[url].longURL;
     }
   }
 };

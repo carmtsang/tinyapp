@@ -1,9 +1,10 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
+
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcryptjs');
 
 const { generateRandomString, getUserByEmail, urlsForUser, findLongURL } = require('./helpers');
 const { urlDatabase, users } = require('./constants');
@@ -40,25 +41,22 @@ app.post('/login', (req, res) => {
   const email = req.body.email;
   const user = getUserByEmail(email, users);
 
-  if (!user) {
-    res.status(403).send('User does not exist');
-  } else if (user && !bcrypt.compareSync(password, users[user].password)) {
-    res.status(403).send('Incorrect password');
+  if (!user || !bcrypt.compareSync(password, users[user].password)) {
+    res.status(403).send('Incorrect username or password');
   } else {
-    req.session.user_id = user;
+    req.session.userId = user;
     res.redirect('/urls');
   }
-  console.log(user)
 });
 
 app.get('/urls', (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userId;
   
   const templateVars = {
     urls: urlsForUser(user, urlDatabase),
     user: users[user]
   };
-  console.log(templateVars)
+
   !user ? res.redirect(401, 'login') : res.render("urls_index", templateVars);
 });
 
@@ -66,31 +64,32 @@ app.get('/urls', (req, res) => {
 // posting a new longURL
 app.post('/urls', (req, res) => {
   const shortURL = generateRandomString();
-  const user = req.session.user_id;
+  const user = req.session.userId;
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID: user
-  }
+  };
+
   !user ? res.redirect(401, 'login') : res.redirect(`/urls/${shortURL}`);
 });
 
 // page to create a new short url. if a user is not logged in, redirect to login
 app.get('/urls/new', (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userId;
   const templateVars = { user: users[user] };
+
   !user ? res.redirect('/login') : res.render('urls_new', templateVars);
 });
 
-
 // route to individual short url
 app.get('/urls/:shortURL', (req, res) => {
-  const user = req.session.user_id;
-  const shortURL = req.params.shortURL
+  const user = req.session.userId;
+  const shortURL = req.params.shortURL;
   
   if (!user) {
-    res.redirect(401, 'login') 
+    res.redirect(401, 'login');
   } else if (user !== urlDatabase[shortURL].userID) {
-    res.status(403).send('You do not own this Tiny URL')
+    res.status(403).send('You do not own this Tiny URL');
   } else {
     const templateVars = {
       shortURL,
@@ -106,27 +105,29 @@ app.get('/u/:shortURL', (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = findLongURL(shortURL, urlDatabase);
   
-  longURL ? res.redirect(longURL) : res.status(404).send('Invalid URL')
+  longURL ? res.redirect(longURL) : res.status(404).send('Invalid URL');
 });
 
-// edit a longURL - only users can edit their own urls
+// edit a longURL
 app.post('/urls/:shortURL', (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userId;
   const shortURL = req.params.shortURL;
+  
   if (user !== urlDatabase[shortURL].userID) {
-    res.redirect(403, 'login') 
+    res.redirect(403, 'login');
   } else {
     urlDatabase[shortURL].longURL = req.body.longURL;
     res.redirect('/urls');
   }
 });
 
-// delete a url resource
+// delete a url
 app.post('/urls/:shortURL/delete', (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userId;
   const shortURL = req.params.shortURL;
+
   if (user !== urlDatabase[shortURL].userID) {
-    res.status(403).send('You do not own this Tiny URL')
+    res.status(403).send('You do not own this Tiny URL');
   } else {
     delete(urlDatabase[shortURL]);
     res.redirect('/urls');
@@ -140,7 +141,7 @@ app.post('/logout', (req, res) => {
 
 // to registration
 app.get('/register', (req, res) => {
-  const user = req.session.user_id;
+  const user = req.session.userId;
   const templateVars = { user: users[user] };
   res.render('register', templateVars);
 });
@@ -153,7 +154,7 @@ app.post('/register', (req, res) => {
   if (!email || !password) {
     res.redirect(400, 'register');
   } else if (user) {
-    res.redirect(400, 'login') ;
+    res.redirect(400, 'login');
   } else {
     const hashedPassword = bcrypt.hashSync(password, 10);
     const userID = generateRandomString();
@@ -162,7 +163,7 @@ app.post('/register', (req, res) => {
       email: email,
       password: hashedPassword
     };
-    req.session.user_id = users[userID].id
+    req.session.userId = users[userID].id;
     res.redirect('/urls');
   }
 });
