@@ -19,7 +19,7 @@ app.use(cookieSession({
 
 // routes
 app.get('/', (req, res) => {
-  res.redirect('/');
+  res.redirect('/register');
 });
 
 app.get('/urls.json', (req, res) => {
